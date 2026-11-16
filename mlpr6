@@ -1,0 +1,134 @@
+
+# ==========================================================
+# Experiment: Logistic Regression
+# Dataset: data.csv
+# ==========================================================
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+
+from sklearn.metrics import (
+    accuracy_score,
+    confusion_matrix,
+    ConfusionMatrixDisplay,
+    precision_score,
+    recall_score,
+    f1_score,
+    classification_report
+)
+
+# Step 1: Load Dataset
+df = pd.read_csv("data.csv")
+
+print("First Five Records:")
+print(df.head())
+
+# Step 2: Dataset Information
+print("\nDataset Shape:")
+print(df.shape)
+
+print("\nMissing Values:")
+print(df.isnull().sum())
+
+print("\nDataset Information:")
+df.info()
+
+print("\nStatistical Description:")
+print(df.describe())
+
+# Step 3: Handle Missing Values
+df = df.dropna()
+
+# Step 4: Separate Input and Output
+# Assuming the last column is the target variable
+
+X = df.iloc[:, :-1]
+y = df.iloc[:, -1]
+
+# Step 5: Convert categorical input columns
+X = pd.get_dummies(X, drop_first=True)
+
+# Step 6: Train-Test Split
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.20,
+    random_state=42,
+    stratify=y
+)
+
+# Step 7: Feature Scaling
+scaler = StandardScaler()
+
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Step 8: Train Logistic Regression Model
+model = LogisticRegression(random_state=42, max_iter=1000)
+
+model.fit(X_train, y_train)
+
+# Step 9: Make Predictions
+y_pred = model.predict(X_test)
+
+# Step 10: Calculate Accuracy
+accuracy = accuracy_score(y_test, y_pred)
+
+print("\nAccuracy:", round(accuracy, 4))
+
+# Step 11: Confusion Matrix
+cm = confusion_matrix(y_test, y_pred)
+
+print("\nConfusion Matrix:")
+print(cm)
+
+disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+disp.plot(cmap="Blues")
+
+plt.title("Confusion Matrix")
+plt.show()
+
+# Step 12: Calculate Performance Metrics
+precision = precision_score(
+    y_test, y_pred, average="weighted", zero_division=0
+)
+
+recall = recall_score(
+    y_test, y_pred, average="weighted", zero_division=0
+)
+
+f1 = f1_score(
+    y_test, y_pred, average="weighted", zero_division=0
+)
+
+# Step 13: Classification Report
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+
+# Step 14: Create Results DataFrame
+results = pd.DataFrame({
+    "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
+    "Value": [accuracy, precision, recall, f1]
+})
+
+print("\nPerformance Metrics:")
+print(results)
+
+# Step 15: Performance Graph
+plt.figure(figsize=(7, 4))
+
+plt.bar(results["Metric"], results["Value"])
+
+plt.ylim(0, 1.05)
+
+plt.title("Logistic Regression Performance Metrics")
+plt.xlabel("Metrics")
+plt.ylabel("Score")
+
+plt.show()
